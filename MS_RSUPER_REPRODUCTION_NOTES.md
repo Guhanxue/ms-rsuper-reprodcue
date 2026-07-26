@@ -108,6 +108,56 @@ Measured cue counts over all 368 reports:
 | ED | **368** | **0** |
 | TC | **368** | **0** |
 
+### 3.1 How we implement the R-Super baseline
+
+Our reported Brain **R-Super loss** row is a within-study implementation of the
+report-derived loss principle, not a reproduction of R-Super's complete published
+system. The executable contract is:
+
+| item | our implementation |
+|---|---|
+| model | plain four-class 3D U-Net (`bg`, NCR, ED, ET); no FiLM or report input in the network |
+| dense supervision | Dice--cross-entropy on random crops from the same 26 labeled cases |
+| report supervision | 231 TextBraTS report cases, evaluated as padded full exams rather than random crops |
+| prediction constrained | whole-tumour probability, `p_WT = 1 - p_background` |
+| report size cue | compact size word mapped through the TextBraTS whole-tumour quartile thresholds; the bin midpoint is the target volume |
+| spatial support | the report-derived full-exam envelope supplied as R-Super's allowed segment mask |
+| report loss | R-Super Volume+Ball helper, weighted by `0.1` |
+| optimization | 90 epochs, report batch size 2, seeds 42/1/2 |
+| inference | image only; the report branch and loss are absent |
+
+Mechanically, the size-bin midpoint is converted to a sphere-equivalent diameter.
+R-Super's spherical/Gaussian convolution locates a candidate centre inside the report
+envelope, and its Volume+Ball helper constructs the report-derived target and applies
+the volume and pseudo-mask penalties to `p_WT`. The reference dense `conv3d` locator
+would require kernels as large as approximately \(91^3\) voxels in this setting. We
+replace only that detached locator computation with numerically equivalent
+centrosymmetric FFT linear convolution followed by the identical ``same'' crop; the
+loss definition and gradients after target construction are unchanged.
+
+The matched labeled-only control uses the same model, split seed, optimizer, number of
+epochs, full training roster, and evaluation, but sets `report_weight=0`; this makes the
+report-dependent forward unreachable. The final Brain comparison therefore isolates
+adding the R-Super report loss within this training recipe.
+
+Two distinctions prevent overclaiming:
+
+1. This row does **not** reproduce R-Super's Merlin initialization, larger segmentation
+   model, or original training scale. It tests the loss mechanism on our common backbone
+   and label budget.
+2. It does **not** use `MSRSuperWeights(loss_mode="rsuper")` from the included
+   third-party MS-RSuper reproduction. That convenience branch implements symmetric
+   total-volume and count losses. Our reported R-Super row instead calls the original
+   R-Super Volume+Ball helpers staged by
+   `experiments/strict_lesion_eval/train_rsuper_nofilm.py` with `--rsuper-ball`.
+   The trainer's older adapted volume+laterality fallback is also bypassed.
+
+This adaptation has a task-specific limitation: a compact spherical target is an
+imperfect model of an irregular or disconnected glioma, while the TextBraTS size word
+is a whole-tumour volume bin rather than a measured lesion diameter. Multiple named
+lobes are used to form a spatial envelope; they are not converted into multiple balls
+or an exact lesion count.
+
 ---
 
 ## 4. Which of your loss terms we can and cannot drive
@@ -216,10 +266,10 @@ on 7.9% of cases in one substructure under the omission-as-absence interpretatio
 We therefore do **not** believe a number produced on this dataset would exercise the
 full MS-RSuper method, and we are not reporting one as such.
 
-A prior arm in our tables was labelled "ms-R-Super-inspired". That arm is **not** your
-method: it is R-Super's Volume+Ball loss applied across our four BraTS classes, at
-`report_weight=0.1`, with no existence, count or prior term. We are correcting the
-wording so it cannot be read as an MS-RSuper comparison.
+The reported R-Super baseline is documented in §3.1 and is **not** MS-RSuper. A separate
+historical arm was labelled "ms-R-Super-inspired"; that arm is also not the authors'
+method and must not be used as an MS-RSuper result. We keep these names and mechanisms
+separate so neither can be read as a full MS-RSuper comparison.
 
 **If you think MS-RSuper should be testable here, we would be glad to be corrected** —
 in particular on the `absent`-versus-`None` question in §4.1, and on whether a
@@ -236,5 +286,7 @@ whole-tumour size cue is an acceptable substitute for `d_max`.
 | `test_ms_rsuper_brain.py` | validation: weights, cue counts over all 368 reports, minimum-count liveness, proof that `L_prior` is exactly zero, gradient flow, channel-mapping sanity |
 | `scripts/correct_text_v6.py` | previously cited compact-template preprocessing script; absent from the archived repository, so its role is not independently verifiable |
 
-Attribution note: our repository also vendors `rsuper_losses.py` (2,090 lines) from
-R-Super without a license header. We are adding attribution before release.
+Attribution note: the training snapshot stages `scripts/rsuper_losses.py` from the
+R-Super codebase without a license header. That file is not part of this small share
+repository; its source attribution must remain attached wherever the full training
+artifact is released.

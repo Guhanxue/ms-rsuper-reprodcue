@@ -25,8 +25,8 @@ The implementation and documentation from
 | file | contents |
 |---|---|
 | `README.md` | short index, points at the upstream loss by URL and sha |
-| `MS_RSUPER_REPRODUCTION_NOTES.md` | the deliverable: our BraTS2020 setup, TextBraTS report provenance, split, cue extraction, and which loss terms our data cannot drive |
-| `ms_rsuper_loss.py` | exact upstream R-Super/MS-RSuper loss used by the adapter; SHA and attribution preserved |
+| `MS_RSUPER_REPRODUCTION_NOTES.md` | the deliverable: our BraTS2020 setup, TextBraTS report provenance, split, exact R-Super baseline contract, MS-RSuper cue extraction, and which loss terms our data cannot drive |
+| `ms_rsuper_loss.py` | exact third-party MS-RSuper reproduction loss used by the adapter; distinct from our original R-Super Volume+Ball baseline; SHA and attribution preserved |
 | `ms_rsuper_brain_adapter.py` | cue extraction plus adapter from our 4-class softmax to the (ET, ED, TC, WT) probabilities their loss expects |
 | `test_ms_rsuper_brain.py` | validation over all 368 reports, including the minimum-one-component count cue and proof that the anatomical prior is exactly zero here |
 | `.gitignore` | excludes Python artifacts |

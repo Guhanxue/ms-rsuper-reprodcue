@@ -3,12 +3,14 @@
 Notes prepared for review by the MS-RSuper authors.
 
 - `MS_RSUPER_REPRODUCTION_NOTES.md` — how we pull BraTS2020, how the split is built,
-  the provenance and content of the TextBraTS-derived report cues, and **which of the four loss terms our dataset
-  cannot drive**, with measurements.
+  the provenance and content of the TextBraTS-derived report cues, the exact within-study
+  R-Super baseline contract, and **which MS-RSuper loss terms our dataset can and cannot
+  drive**, with measurements.
 - `ms_rsuper_brain_adapter.py` — cue extraction + adapter from our 4-class softmax to
   the (ET, ED, TC, WT) probabilities the loss expects.
-- `ms_rsuper_loss.py` — the exact upstream R-Super/MS-RSuper loss implementation used
-  by the adapter.
+- `ms_rsuper_loss.py` — the exact third-party MS-RSuper reproduction loss used by
+  the adapter. This is distinct from the original R-Super Volume+Ball helper used
+  by our R-Super baseline (§3.1 of the notes).
 - `test_ms_rsuper_brain.py` — validation over all 368 reports; verifies the
   minimum-one-component count cue, proves `L_prior` is exactly zero, and checks
   gradient flow and channel mapping.
