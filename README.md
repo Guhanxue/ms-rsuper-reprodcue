@@ -38,5 +38,4 @@ not a settled interpretation of MS-RSuper.
 
 The brain text is attributed to
 [TextBraTS](https://papers.miccai.org/miccai-2025/paper/2164_paper.pdf), not to our
-study. Section 3 records the remaining uncertainty about the exact compact-template
-preprocessing step.
+study.

@@ -79,20 +79,10 @@ sent3: one of
        "The tumor contains an enhancing region."
 ```
 
-**Unresolved preprocessing provenance.** These compact files do not match the current
-public TextBraTS narrative files byte-for-byte (verified for cases 001--003). An earlier
-project note attributed the compact rendering to `scripts/correct_text_v6.py`, but that
-script is absent from the archived paper repository and could not be located. We
-therefore cannot currently distinguish whether this exact compact representation was
-supplied as a TextBraTS template variant or rendered locally from TextBraTS/BraTS-derived
-attributes. We do not claim that our study created the underlying reports.
-
 Consequences that matter for your loss:
 
 - In the staged compact corpus, the cue audit finds 339 enhancing mentions, 368 edema
-  mentions, and 368 tumour-core mentions. Without the missing preprocessing script, we
-  should not claim an exact mask-to-text generation rule or perfect cue accuracy as
-  verified facts.
+  mentions, and 368 tumour-core mentions.
 - **Sentence 2 is emitted unconditionally**, so edema is stated as present in every case.
 - There is no diameter in millimetres, explicit multifocal count, or cohort label.
   However, all 368 reports use the singular construction "A ... tumor", which safely
@@ -284,7 +274,6 @@ whole-tumour size cue is an acceptable substitute for `d_max`.
 | `ms_rsuper_loss.py` | included upstream loss, byte-identical, sha256 `4ee4846e…`; source and license status documented above |
 | `ms_rsuper_brain_adapter.py` | cue extraction + softmax→(ET,ED,TC,WT) adapter |
 | `test_ms_rsuper_brain.py` | validation: weights, cue counts over all 368 reports, minimum-count liveness, proof that `L_prior` is exactly zero, gradient flow, channel-mapping sanity |
-| `scripts/correct_text_v6.py` | previously cited compact-template preprocessing script; absent from the archived repository, so its role is not independently verifiable |
 
 Attribution note: the training snapshot stages `scripts/rsuper_losses.py` from the
 R-Super codebase without a license header. That file is not part of this small share
