@@ -9,8 +9,9 @@ Notes prepared for review by the MS-RSuper authors.
   the (ET, ED, TC, WT) probabilities the loss expects.
 - `ms_rsuper_loss.py` — the exact upstream R-Super/MS-RSuper loss implementation used
   by the adapter.
-- `test_ms_rsuper_brain.py` — validation over all 368 reports; proves `L_count` and
-  `L_prior` are exactly zero on this dataset.
+- `test_ms_rsuper_brain.py` — validation over all 368 reports; verifies the
+  minimum-one-component count cue, proves `L_prior` is exactly zero, and checks
+  gradient flow and channel mapping.
 
 The included loss is `ms_rsuper_train/losses/ms_rsuper_loss.py` from
 https://github.com/jwkl0990-glitch/MS-R-Super at upstream commit

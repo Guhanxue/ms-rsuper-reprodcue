@@ -41,8 +41,11 @@ WHAT THIS DATASET CAN AND CANNOT DRIVE (measured over all 368 reports):
            WHOLE-TUMOUR volume quartile (thresholds.json). We pass the WT-derived
            fraction. Their naive-R-Super branch (loss_mode="rsuper") matches our
            cue semantics more exactly.
-  L_count  STRUCTURALLY INERT.  The reports carry no lesion count; "fragmented"
-           is a shape descriptor. n_qual is None, so their count_loss returns 0.
+  L_count  WEAKLY DRIVEN. All 368 compact reports use the singular construction
+           "A ... tumor", which supports the minimum-count cue n_qual=1. This
+           enforces at least one predicted component but supplies no multifocal
+           count. Multiple named lobes do not imply multiple lesions, and
+           "fragmented" is a shape descriptor, not an exact component count.
   L_prior  STRUCTURALLY INERT.  Defined only for MEN (parenchymal mask) and MET
            (dural mask). BraTS2020 is glioma-only, so cohort is None and their
            prior_loss returns 0 *by their own code*, not by our omission.
@@ -94,7 +97,9 @@ def extract_brain_cues(text: str, size_target_voxels: Optional[float],
 
     return {
         "cohort": None,              # BraTS2020 is glioma-only -> L_prior == 0
-        "n_qual": None,              # no count in these reports -> L_count == 0
+        # Every compact report explicitly describes at least one tumour.
+        # This is a minimum count, not an assertion of one connected component.
+        "n_qual": 1,
         "d_max_frac": (float(size_target_voxels) / numel
                        if size_target_voxels else None),
         "substruct": {

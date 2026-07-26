@@ -43,22 +43,23 @@ if not files:
     )
 states = {"ET": {"present": 0, "absent": 0}, "ED": {"present": 0, "absent": 0},
           "TC": {"present": 0, "absent": 0}}
-n_count_cues = n_cohort_cues = 0
+n_min_one_cues = n_cohort_cues = 0
 for f in files:
     cue = extract_brain_cues(open(f).read(), 20000.0, 128 ** 3)
     for k in states:
         states[k][cue["substruct"][k]["state"]] += 1
-    n_count_cues += cue["n_qual"] is not None
+    n_min_one_cues += cue["n_qual"] == 1
     n_cohort_cues += cue["cohort"] is not None
 for k, v in states.items():
     print(f"    {k}: present={v['present']}  absent={v['absent']}")
 check("ED present in every report", states["ED"]["present"] == len(files))
 check("ET has BOTH present and absent cues", states["ET"]["present"] > 0 and states["ET"]["absent"] > 0,
       f"{states['ET']['present']}/{states['ET']['absent']}")
-check("no report yields a count cue", n_count_cues == 0, f"{n_count_cues} cues")
+check("every report yields minimum count n_qual=1",
+      n_min_one_cues == len(files), f"{n_min_one_cues} cues")
 check("no report yields a cohort cue", n_cohort_cues == 0, f"{n_cohort_cues} cues")
 
-print("\n=== 3. count and prior are provably zero on this dataset ===")
+print("\n=== 3. minimum count is satisfied by ordinary foreground; prior is zero ===")
 torch.manual_seed(0)
 logits = torch.randn(2, 4, 16, 24, 24, requires_grad=True)
 cues = [extract_brain_cues(open(files[i]).read(), 20000.0, 16 * 24 * 24) for i in (0, 1)]
@@ -66,7 +67,7 @@ loss = MSRSuperBrainLoss()
 out = loss(logits, cues)
 for k, v in out.items():
     print(f"    {k} = {float(v):.8f}")
-check("L_count == 0 exactly", float(out["L_count"]) == 0.0)
+check("L_count == 0 when >=1 component is predicted", float(out["L_count"]) == 0.0)
 check("L_prior == 0 exactly", float(out["L_prior"]) == 0.0)
 # L_exist is legitimately 0 here: with min_voxels=1.0 the "present" term only
 # fires when predicted soft volume drops below ~1 voxel of the whole patch, and
@@ -96,6 +97,23 @@ lp = float(loss(lg, cue_present)["L_exist"])
 print(f"    ET-absent cue -> L_exist={la:.6f}   ET-present cue -> L_exist={lp:.6f}")
 check("absent cue penalises a saturated ET prediction", la > lp)
 check("present cue is ~0 when ET is saturated", lp < 1e-6)
+
+print("\n=== 6. minimum-count cue is live when no component is predicted ===")
+lg_empty = torch.full((1, 4, 8, 8, 8), -6.0, requires_grad=True)
+with torch.no_grad():
+    lg_empty[:, 0] = 6.0       # force background; no WT component at threshold 0.5
+cue_min_one = [{"cohort": None, "n_qual": 1, "d_max_frac": None,
+                "substruct": {"ET": {"state": None, "lambda_": 1.0},
+                              "ED": {"state": None, "lambda_": 1.0},
+                              "TC": {"state": None, "lambda_": 1.0}}}]
+out_empty = loss(lg_empty, cue_min_one)
+lc = out_empty["L_count"]
+print(f"    empty prediction -> L_count={float(lc):.6f}")
+check("minimum-count cue penalises zero predicted components", float(lc) > 0.0)
+lc.backward()
+check("minimum-count penalty has non-zero gradient",
+      float(lg_empty.grad.abs().sum()) > 0.0,
+      f"{float(lg_empty.grad.abs().sum()):.6f}")
 
 print(f"\n{'ALL_MS_RSUPER_ADAPTER_TESTS_PASS' if FAIL == 0 else f'{FAIL} CHECKS FAILED'}")
 sys.exit(1 if FAIL else 0)

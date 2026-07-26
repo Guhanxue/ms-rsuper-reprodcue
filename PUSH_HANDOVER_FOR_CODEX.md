@@ -28,7 +28,7 @@ The implementation and documentation from
 | `MS_RSUPER_REPRODUCTION_NOTES.md` | the deliverable: our BraTS2020 setup, TextBraTS report provenance, split, cue extraction, and which loss terms our data cannot drive |
 | `ms_rsuper_loss.py` | exact upstream R-Super/MS-RSuper loss used by the adapter; SHA and attribution preserved |
 | `ms_rsuper_brain_adapter.py` | cue extraction plus adapter from our 4-class softmax to the (ET, ED, TC, WT) probabilities their loss expects |
-| `test_ms_rsuper_brain.py` | validation over all 368 reports, including proof that count and prior are exactly zero here |
+| `test_ms_rsuper_brain.py` | validation over all 368 reports, including the minimum-one-component count cue and proof that the anatomical prior is exactly zero here |
 | `.gitignore` | excludes Python artifacts |
 | `PUSH_HANDOVER_FOR_CODEX.md` | this push receipt and provenance boundary |
 
@@ -53,8 +53,9 @@ license header. Do not remove the provenance statement or present this file as o
 - The cited upstream loss was cloned independently and its SHA-256 matched
   `4ee4846e9d44c92d03953805cf5e4292bea74b535cb22b701d5520b757d4efee`.
 - The adapter test passed against that exact upstream file and all 368 reports:
-  ET 339 present/29 omitted, ED 368/0, TC 368/0; `L_count` and `L_prior`
-  were exactly zero; size loss and gradients were live; the absent-ET control passed.
+  ET 339 present/29 omitted, ED 368/0, TC 368/0; all reports supplied
+  `n_qual=1`; the minimum-count loss was live for an empty prediction;
+  `L_prior` was exactly zero; size loss, gradients, and the absent-ET control passed.
 - Secret scan over all tracked files: clean. No tokens, keys, passwords or credentials.
 - Only internal path referenced is `/scratch/user/hagu`, a cluster path, which is
   harmless to share.

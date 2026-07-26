@@ -94,7 +94,11 @@ Consequences that matter for your loss:
   should not claim an exact mask-to-text generation rule or perfect cue accuracy as
   verified facts.
 - **Sentence 2 is emitted unconditionally**, so edema is stated as present in every case.
-- There is no diameter in millimetres, no lesion count, and no cohort label.
+- There is no diameter in millimetres, explicit multifocal count, or cohort label.
+  However, all 368 reports use the singular construction "A ... tumor", which safely
+  establishes a minimum count of one (`n_qual=1`). It does **not** establish that the
+  tumour is one continuous connected component: a single tumour may cross several
+  lobes, and "fragmented" describes morphology rather than verified multiplicity.
 
 Measured cue counts over all 368 reports:
 
@@ -112,7 +116,7 @@ Measured cue counts over all 368 reports:
 |---|---|---|
 | `L_exist` | **barely driveable** | see below |
 | `L_size` | driveable, with a semantic caveat | we have a whole-tumour volume quartile, not a largest-lesion diameter |
-| `L_count` | **not driveable** | reports contain no lesion count |
+| `L_count` | **weakly driveable** | every report supports only the lower bound `n_qual=1`; no multifocal count is available |
 | `L_prior` | **not driveable** | glioma-only cohort |
 
 ### 4.1 `L_exist` — the term we understand to be the main contribution
@@ -155,9 +159,19 @@ closely than `L_size` does.
 
 ### 4.3 `L_count`
 
-Not driveable. Our reports never state multiplicity. "fragmented" (93/368) is a shape
-descriptor produced by `classify_shape`, not a lesion count. We pass `n_qual=None`, and
-your `count_loss` returns zero — verified numerically.
+Weakly driveable as a minimum-count constraint. All 368 compact reports begin with the
+singular construction "A ... tumor", while none contains explicit multiple-lesion,
+multifocal, or plural-lesion language. We therefore pass `n_qual=1`. This is valid for
+the one-sided MS-RSuper objective: it requires at least one predicted component without
+penalising additional components.
+
+We do **not** infer one lesion per named lobe or assume one continuous tumour. One
+contiguous tumour can cross several lobes, and "fragmented" (93/368) is a morphology
+descriptor rather than a verified count. Consequently, this cue penalises only an empty
+thresholded prediction. It provides no supervision about whether the case contains one
+or multiple components and is largely redundant with foreground-existence supervision.
+The validation test confirms that the term is positive with a non-zero gradient when no
+component is predicted and zero once at least one component is present.
 
 ### 4.4 `L_prior`
 
@@ -195,11 +209,12 @@ the same silent degradation.
 
 ## 6. What we conclude, and what we are not claiming
 
-On BraTS2020 with GT-derived templated reports, an MS-RSuper comparison exercises
-**`L_size` plus an absence penalty active on 7.9% of cases in one substructure**, with
-`L_count` and `L_prior` structurally zero. We therefore do **not** believe a number
-produced on this dataset would say anything meaningful about MS-RSuper, and we are not
-reporting one as such.
+On BraTS2020 with these TextBraTS-derived compact templates, an MS-RSuper comparison
+exercises **`L_size`, a minimum-one-component constraint, and an absence penalty active
+on 7.9% of cases in one substructure under the omission-as-absence interpretation**.
+`L_count` contains no multifocal information, and `L_prior` remains structurally zero.
+We therefore do **not** believe a number produced on this dataset would exercise the
+full MS-RSuper method, and we are not reporting one as such.
 
 A prior arm in our tables was labelled "ms-R-Super-inspired". That arm is **not** your
 method: it is R-Super's Volume+Ball loss applied across our four BraTS classes, at
@@ -218,7 +233,7 @@ whole-tumour size cue is an acceptable substitute for `d_max`.
 |---|---|
 | `ms_rsuper_loss.py` | included upstream loss, byte-identical, sha256 `4ee4846e…`; source and license status documented above |
 | `ms_rsuper_brain_adapter.py` | cue extraction + softmax→(ET,ED,TC,WT) adapter |
-| `test_ms_rsuper_brain.py` | validation: weights, cue counts over all 368 reports, proof that `L_count`/`L_prior` are exactly zero, gradient flow, channel-mapping sanity |
+| `test_ms_rsuper_brain.py` | validation: weights, cue counts over all 368 reports, minimum-count liveness, proof that `L_prior` is exactly zero, gradient flow, channel-mapping sanity |
 | `scripts/correct_text_v6.py` | previously cited compact-template preprocessing script; absent from the archived repository, so its role is not independently verifiable |
 
 Attribution note: our repository also vendors `rsuper_losses.py` (2,090 lines) from
