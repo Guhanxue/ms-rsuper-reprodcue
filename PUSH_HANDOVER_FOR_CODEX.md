@@ -26,25 +26,27 @@ The implementation and documentation from
 |---|---|
 | `README.md` | short index, points at the upstream loss by URL and sha |
 | `MS_RSUPER_REPRODUCTION_NOTES.md` | the deliverable: our BraTS2020 pull, split, cue generation, and which loss terms our data cannot drive |
+| `ms_rsuper_loss.py` | exact upstream R-Super/MS-RSuper loss used by the adapter; SHA and attribution preserved |
 | `ms_rsuper_brain_adapter.py` | cue extraction plus adapter from our 4-class softmax to the (ET, ED, TC, WT) probabilities their loss expects |
 | `test_ms_rsuper_brain.py` | validation over all 368 reports, including proof that count and prior are exactly zero here |
-| `.gitignore` | prevents the unlicensed upstream loss and Python artifacts from being committed |
-| `PUSH_HANDOVER_FOR_CODEX.md` | this push receipt and license boundary |
+| `.gitignore` | excludes Python artifacts |
+| `PUSH_HANDOVER_FOR_CODEX.md` | this push receipt and provenance boundary |
 
-## What NOT to push, deliberately
+## Upstream loss provenance
 
-Do not add `ms_rsuper_loss.py`. It is the MS-R-Super authors' file, vendored byte
-identical, and it carries no license header. Copying it into Hanxue's repository is an
-attribution problem we do not need, and the authors already have their own code. The
-notes reference it by URL and sha256 instead:
+Hanxue explicitly requested on 2026-07-26 that the exact loss be included so this
+private review repository is self-contained. It is the upstream reproduction authors'
+file, not our implementation. Preserve its bytes and attribution:
 
 ```
 https://github.com/jwkl0990-glitch/MS-R-Super
+upstream commit 7421fbc2a028127461e67a436a813224eb985839
 ms_rsuper_train/losses/ms_rsuper_loss.py
 sha256 4ee4846e9d44c92d03953805cf5e4292bea74b535cb22b701d5520b757d4efee
 ```
 
-If a reviewer asks for it, point them at that URL rather than committing a copy.
+The upstream repository contains no `LICENSE`/`COPYING` file and the loss has no
+license header. Do not remove the provenance statement or present this file as ours.
 
 ## Checks completed
 
@@ -57,7 +59,7 @@ If a reviewer asks for it, point them at that URL rather than committing a copy.
 - Only internal path referenced is `/scratch/user/hagu`, a cluster path, which is
   harmless to share.
 - No patient data, no case identifiers, no image files.
-- `ms_rsuper_loss.py` is ignored and absent from the tracked file set.
+- `ms_rsuper_loss.py` is tracked byte-identical to the cited upstream SHA.
 
 ## Commands used
 

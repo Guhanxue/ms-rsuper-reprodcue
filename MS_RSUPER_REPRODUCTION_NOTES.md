@@ -21,6 +21,9 @@ shipped: `w_size=1.0`, `w_count=0.5`, `w_prior=0.2`, `threshold=0.5`,
 
 **Note:** that repository is itself a third-party reproduction, not the authors' code. If
 an official implementation exists we would rather compare against it.
+The upstream repository has no `LICENSE`/`COPYING` file and this source file has no
+license header. It is included here for private reproduction review with its original
+bytes, URL, commit (`7421fbc2a028127461e67a436a813224eb985839`) and SHA preserved.
 
 ---
 
@@ -197,7 +200,7 @@ whole-tumour size cue is an acceptable substitute for `d_max`.
 
 | file | contents |
 |---|---|
-| `ms_rsuper_loss.py` | upstream loss used byte-identical (sha256 `4ee4846e…`); **not redistributed in this repository** because the source file has no license header |
+| `ms_rsuper_loss.py` | included upstream loss, byte-identical, sha256 `4ee4846e…`; source and license status documented above |
 | `ms_rsuper_brain_adapter.py` | cue extraction + softmax→(ET,ED,TC,WT) adapter |
 | `test_ms_rsuper_brain.py` | validation: weights, cue counts over all 368 reports, proof that `L_count`/`L_prior` are exactly zero, gradient flow, channel-mapping sanity |
 | `scripts/correct_text_v6.py` | our report generator (GT-derived templates) |

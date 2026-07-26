@@ -1,11 +1,10 @@
 #!/usr/bin/env python3
 """MS-RSuper on BraTS2020: cue extraction + our-model adapter.
 
-The loss math is NOT reimplemented here.  We used `ms_rsuper_loss.py`
-byte-identical from the MS-R-Super reproduction repository
+The loss math is NOT reimplemented here. The included `ms_rsuper_loss.py` is
+byte-identical to the file in the MS-R-Super reproduction repository
 (https://github.com/jwkl0990-glitch/MS-R-Super, ms_rsuper_train/losses/), which
-cites Ge, Huang, Liu (arXiv:2602.20994). The upstream file is deliberately not
-redistributed here because it has no license header. This module only
+cites Ge, Huang, Liu (arXiv:2602.20994). This module only
 
   (a) builds the per-sample cue dicts their loss expects, from our BraTS2020
       report text, and
@@ -59,7 +58,7 @@ from typing import Dict, List, Optional
 import torch
 import torch.nn as nn
 
-from ms_rsuper_loss import (  # vendored verbatim
+from ms_rsuper_loss import (  # included byte-identical from the cited upstream repo
     MSRSuperWeights,
     count_loss,
     existence_loss,
