@@ -30,7 +30,7 @@ bytes, URL, commit (`7421fbc2a028127461e67a436a813224eb985839`) and SHA preserve
 ## 2. Dataset
 
 **Source.** BraTS 2020 training release, `MICCAI_BraTS2020_TrainingData`, **369 cases**
-on disk. 368 of them carry our generated report text (one case lacks it).
+on disk. 368 of them carry TextBraTS-derived templated text (one case lacks it).
 
 Per case we use the four standard modalities plus `{case}_seg.nii`. Labels follow the
 BraTS convention, remapped internally to `{1: NCR, 2: ED, 3: ET}` (our
@@ -56,12 +56,19 @@ fragments into ~17 components/exam of which 61% are exactly one voxel; the filte
 
 ---
 
-## 3. How our report cues are produced — please read this part
+## 3. Provenance and content of the report cues — please read this part
 
-**Our "reports" are synthetic and derived from the ground-truth mask.** They are not
-radiology reports. `scripts/correct_text_v6.py` reads `{case}_seg.nii` and
-`{case}_flair.nii`, computes mask properties (per-class voxel counts, laterality, lobe
-occupancy, a size quartile, a shape class), and emits a 2–3 sentence template:
+**The report corpus comes from TextBraTS; it was not authored by our study.**
+TextBraTS extends BraTS2020 with textual annotations. Its published creation pipeline
+used GPT-4o to draft preliminary reports from videos of FLAIR and ground-truth slices,
+followed by automated quality control and review by two radiologists, with disagreements
+resolved by a third. The TextBraTS paper also evaluates standardized templated
+representations of those annotations:
+
+- paper: https://papers.miccai.org/miccai-2025/paper/2164_paper.pdf
+- dataset: https://huggingface.co/datasets/Jupitern52/TextBraTS
+
+Our experiments use a compact, 2–3 sentence TextBraTS-derived templated representation:
 
 ```
 sent1: "A {size} {shape} tumor is located in the {laterality} {lobes}."
@@ -72,11 +79,20 @@ sent3: one of
        "The tumor contains an enhancing region."
 ```
 
+**Unresolved preprocessing provenance.** These compact files do not match the current
+public TextBraTS narrative files byte-for-byte (verified for cases 001--003). An earlier
+project note attributed the compact rendering to `scripts/correct_text_v6.py`, but that
+script is absent from the archived paper repository and could not be located. We
+therefore cannot currently distinguish whether this exact compact representation was
+supplied as a TextBraTS template variant or rendered locally from TextBraTS/BraTS-derived
+attributes. We do not claim that our study created the underlying reports.
+
 Consequences that matter for your loss:
 
-- Presence statements are **oracle-derived**: "necrosis" appears iff `ncr_voxels > 0`,
-  "enhancing" iff `et_voxels > 0`. Cue extraction is therefore noiseless — an
-  optimistic setting for any report-supervised method, ours included.
+- In the staged compact corpus, the cue audit finds 339 enhancing mentions, 368 edema
+  mentions, and 368 tumour-core mentions. Without the missing preprocessing script, we
+  should not claim an exact mask-to-text generation rule or perfect cue accuracy as
+  verified facts.
 - **Sentence 2 is emitted unconditionally**, so edema is stated as present in every case.
 - There is no diameter in millimetres, no lesion count, and no cohort label.
 
@@ -203,7 +219,7 @@ whole-tumour size cue is an acceptable substitute for `d_max`.
 | `ms_rsuper_loss.py` | included upstream loss, byte-identical, sha256 `4ee4846e…`; source and license status documented above |
 | `ms_rsuper_brain_adapter.py` | cue extraction + softmax→(ET,ED,TC,WT) adapter |
 | `test_ms_rsuper_brain.py` | validation: weights, cue counts over all 368 reports, proof that `L_count`/`L_prior` are exactly zero, gradient flow, channel-mapping sanity |
-| `scripts/correct_text_v6.py` | our report generator (GT-derived templates) |
+| `scripts/correct_text_v6.py` | previously cited compact-template preprocessing script; absent from the archived repository, so its role is not independently verifiable |
 
 Attribution note: our repository also vendors `rsuper_losses.py` (2,090 lines) from
 R-Super without a license header. We are adding attribution before release.

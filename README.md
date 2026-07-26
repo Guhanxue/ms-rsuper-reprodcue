@@ -3,7 +3,7 @@
 Notes prepared for review by the MS-RSuper authors.
 
 - `MS_RSUPER_REPRODUCTION_NOTES.md` — how we pull BraTS2020, how the split is built,
-  how our report cues are produced, and **which of the four loss terms our dataset
+  the provenance and content of the TextBraTS-derived report cues, and **which of the four loss terms our dataset
   cannot drive**, with measurements.
 - `ms_rsuper_brain_adapter.py` — cue extraction + adapter from our 4-class softmax to
   the (ET, ED, TC, WT) probabilities the loss expects.
@@ -32,3 +32,8 @@ Open questions for the authors are in §4.1 and §4.2 of the notes. In particula
 the current cue extractor operationalizes omission from the enumerated template as
 `absent`. That is an explicit experimental assumption awaiting the authors' answer,
 not a settled interpretation of MS-RSuper.
+
+The brain text is attributed to
+[TextBraTS](https://papers.miccai.org/miccai-2025/paper/2164_paper.pdf), not to our
+study. Section 3 records the remaining uncertainty about the exact compact-template
+preprocessing step.
